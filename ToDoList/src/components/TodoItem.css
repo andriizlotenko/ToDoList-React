@@ -1,0 +1,39 @@
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9f9f9;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.todo-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.todo-title {
+  font-size: 1rem;
+  color: #333;
+}
+
+.todo-title.completed {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.todo-delete {
+  background: none;
+  border: none;
+  color: #e53935;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.todo-delete:hover {
+  color: #c62828;
+}

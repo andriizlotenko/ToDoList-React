@@ -28,18 +28,19 @@ graph TD
     View -.->|"callbacks (onSearch, onAdd, onNext, etc.)"| Container
 ```
 ## Data Flow
-- Props Down: TodoList → TodoListView → TodoItem (passes data & callbacks)
-- Callbacks Up: TodoItem → TodoList (container) → useTodos (hook) → API & local state
-- useTodos performs API queries:
-  - GET /todos?limit={limit}&skip={skip}
-  - PUT /todos/{id} (toggle, edit)
-  - DELETE /todos/{id}
-- Search: client-side filter applied to current page's todos (case-insensitive)
-- Pagination: hook manages currentPage/limitPerPage/totalTodos via API `limit` & `skip`
+Передача props вниз: TodoList → TodoListView → TodoItem (передаються дані та callback-функції).
+Виклик callbacks вгору: TodoItem → TodoList (контейнер) → useTodos (хук) → API та локальний стан.
+  useTodos виконує API-запити:
+-GET /todos?limit={limit}&skip={skip}
+-PUT /todos/{id} (для перемикання статусу та редагування)
+-DELETE /todos/{id}
+
+Пошук: Фільтрація на стороні клієнта, яка застосовується до завдань на поточній сторінці (регістронезалежна).
+Пагінація: Хук керує станами currentPage, limitPerPage, totalTodos через API-параметри limit та skip.
 
 ### Patterns used
-- Custom Hook (useTodos) — encapsulation of data logic and side effects
-- Container / Presentational separation (TodoList container, TodoListView/TodoItem presentational)
-- Prop drilling (props down, callbacks up)
-- Pessimistic updates for edit/toggle/delete (state updated after API success)
-- Client-side add & search (local state)
+Кастомний хук (useTodos) — інкапсуляція логіки роботи з даними та побічних ефектів (сайд-ефектів).
+Розділення на контейнерні та презентаційні компоненти (Container / Presentational) — TodoList як контейнер, TodoListView/TodoItem як презентаційні.
+Прокидування пропсів (Prop drilling) — props передаються вниз, callbacks викликаються вгору.
+Песимістичні оновлення (Pessimistic updates) для редагування/перемикання/видалення — стан оновлюється після успішної відповіді від API.
+Додавання та пошук на стороні клієнта (через локальний стан).

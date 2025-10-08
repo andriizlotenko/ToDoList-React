@@ -2,12 +2,6 @@
 
 ```mermaid
 graph TD
-    subgraph "API Layer"
-        API[<--
-            fa:fa-server API <br/> (dummyjson.com)
-            -->]
-    end
-
     subgraph "Logic (Hook)"
         Hook(useTodos)
     end

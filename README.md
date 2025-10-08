@@ -1,32 +1,38 @@
 # To-Do List App — Component Tree + Data Flow
 
-App
- └── TodoList (Container)  — uses custom hook `useTodos`
-      ├── State (via hook):
-      │     - todos (current page array)
-      │     - rawTodos (unfiltered page data)
-      │     - isLoading
-      │     - error
-      │     - currentPage
-      │     - limitPerPage
-      │     - totalTodos
-      │     - searchTerm
-      ├── Methods (from useTodos):
-      │     - addTodo(title)
-      │     - deleteTodo(id)
-      │     - toggleTodo(id)
-      │     - editTodoTitle(id, newTitle)
-      │     - goToNextPage(), goToPrevPage(), setLimit(limit)
-      │     - setSearchTerm(term)
-      └── TodoListView (Presentational)
-           └── TodoItem (presentational, repeated)
-                ├── Props:
-                │     id, title, completed, onDelete(), onToggle(), onEditTitle()
-                └── Local state:
-                      - isEditing (edit field)
-                      - editTitle (input value)
-                      - localCompleted (visual sync with prop)
+```mermaid
+graph TD
+    subgraph "API Layer"
+        API[<--
+            fa:fa-server API <br/> (dummyjson.com)
+            -->]
+    end
 
+    subgraph "Logic (Hook)"
+        Hook(useTodos)
+    end
+
+    subgraph "UI (Components)"
+        Container{{TodoList}}
+        View[TodoListView]
+        Item[TodoItem]
+    end
+
+    %% Styling
+    style API fill:#f5f5f5,stroke:#555,stroke-width:1px
+    style Hook fill:#f9f,stroke:#333,stroke-width:2px
+    style Container fill:#bbf,stroke:#333,stroke-width:2px
+    style View fill:#9f9,stroke:#333,stroke-width:2px
+    style Item fill:#9f9,stroke:#333,stroke-width:2px
+
+    %% Connections
+    API -- GET, PUT, DELETE --> Hook
+    Hook -- state & functions --> Container
+    Container -- "props (todos, isLoading, deleteTodo, etc.)" --> View
+    View -- "props (id, title, completed, onDelete, etc.)" --> Item
+    Item -.->|"callbacks (onDelete, onToggle, onEditTitle)"| View
+    View -.->|"callbacks (onSearch, onAdd, onNext, etc.)"| Container
+```
 ## Data Flow
 - Props Down: TodoList → TodoListView → TodoItem (passes data & callbacks)
 - Callbacks Up: TodoItem → TodoList (container) → useTodos (hook) → API & local state

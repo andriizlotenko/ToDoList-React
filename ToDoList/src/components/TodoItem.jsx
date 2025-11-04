@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import "./TodoItem.css";
 
-export default function TodoItem({ id, title, completed, onDelete, onToggle, onEditTitle }) {
+function TodoItem({ id, title, completed, onDelete, onToggle, onEditTitle }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
   const [localCompleted, setLocalCompleted] = useState(Boolean(completed));
@@ -60,3 +60,5 @@ export default function TodoItem({ id, title, completed, onDelete, onToggle, onE
     </li>
   );
 }
+
+export default memo(TodoItem);

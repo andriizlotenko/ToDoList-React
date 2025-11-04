@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import useTodos from "../hooks/useTodos";
 import TodoListView from "./TodoListView";
 
@@ -13,11 +13,11 @@ export default function TodoList() {
 
   const [newTask, setNewTask] = useState("");
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     if (!newTask.trim()) return;
     addTodo(newTask.trim());
     setNewTask("");
-  };
+  }, [newTask, addTodo]);
 
   return (
     <TodoListView

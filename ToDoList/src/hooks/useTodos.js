@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 
 const API_BASE = "https://dummyjson.com/todos";
 
@@ -34,21 +34,21 @@ export default function useTodos(initialLimit = 5) {
     fetchPage(currentPage, limitPerPage);
   }, [currentPage, limitPerPage, fetchPage]);
 
-  const goToNextPage = () => {
+  const goToNextPage = useCallback(() => {
     const maxPage = Math.max(1, Math.ceil(totalTodos / limitPerPage));
     setCurrentPage((p) => (p < maxPage ? p + 1 : p));
-  };
+  }, [totalTodos, limitPerPage]);
 
-  const goToPrevPage = () => {
+  const goToPrevPage = useCallback(() => {
     setCurrentPage((p) => (p > 1 ? p - 1 : p));
-  };
+  }, []);
 
-  const setLimit = (limit) => {
+  const setLimit = useCallback((limit) => {
     setLimitPerPage(limit);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const toggleTodo = async (id) => {
+  const toggleTodo = useCallback(async (id) => {
     const t = todos.find((x) => x.id === id);
     if (!t) return;
     const updatedCompleted = !t.completed;
@@ -68,18 +68,26 @@ export default function useTodos(initialLimit = 5) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [todos]);
 
-  const deleteTodo = async (id) => {
+  const deleteTodo = useCallback(async (id) => {
     setIsLoading(true);
     setError(null);
     try {
       const res = await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`Failed to delete: ${res.status}`);
-      setTodos((prev) => prev.filter((x) => x.id !== id));
+      
+      let newLength = 0;
+      setTodos((prev) => {
+        const newState = prev.filter((x) => x.id !== id);
+        newLength = newState.length;
+        return newState;
+      });
+      
       setTotalTodos((t) => Math.max(0, t - 1));
+      
       setTimeout(() => {
-        if (todos.length === 1 && currentPage > 1) {
+        if (newLength === 0 && currentPage > 1) {
           setCurrentPage((p) => p - 1);
         } else {
           fetchPage(currentPage, limitPerPage);
@@ -90,9 +98,9 @@ export default function useTodos(initialLimit = 5) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, limitPerPage, fetchPage]);
 
-  const editTodoTitle = async (id, newTitle) => {
+  const editTodoTitle = useCallback(async (id, newTitle) => {
     if (!newTitle || !newTitle.trim()) return;
     setIsLoading(true);
     setError(null);
@@ -110,9 +118,9 @@ export default function useTodos(initialLimit = 5) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const addTodo = (title) => {
+  const addTodo = useCallback((title) => {
     if (!title || !title.trim()) return;
     const newTodo = {
       id: Date.now(),
@@ -122,11 +130,17 @@ export default function useTodos(initialLimit = 5) {
     };
     setTodos((prev) => [...prev, newTodo]);
     setTotalTodos((t) => t + 1);
-  };
+  }, []);
 
-  const filteredTodos = (searchTerm || "").trim()
-    ? todos.filter((t) => t.todo.toLowerCase().includes(searchTerm.toLowerCase()))
-    : todos;
+  const filteredTodos = useMemo(() => {
+    const term = (searchTerm || "").trim().toLowerCase();
+    if (!term) return todos;
+    return todos.filter((t) => t.todo.toLowerCase().includes(term));
+  }, [todos, searchTerm]);
+  
+  const refetch = useCallback(() => {
+    fetchPage(currentPage, limitPerPage);
+  }, [fetchPage, currentPage, limitPerPage]);
 
   return {
     todos: filteredTodos,
@@ -145,6 +159,6 @@ export default function useTodos(initialLimit = 5) {
     deleteTodo,
     toggleTodo,
     editTodoTitle,
-    refetch: () => fetchPage(currentPage, limitPerPage),
+    refetch,
   };
 }

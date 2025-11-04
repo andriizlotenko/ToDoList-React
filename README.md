@@ -1,45 +1,45 @@
 # To-Do List App — Component Tree + Data Flow
+```mermaid
+graph TD
+    subgraph "Logic (Hook)"
+        Hook(useTodos)
+    end
 
-App
- └── TodoList (Container)  — uses custom hook `useTodos`
-      ├── State (via hook):
-      │     - todos (current page array)
-      │     - rawTodos (unfiltered page data)
-      │     - isLoading
-      │     - error
-      │     - currentPage
-      │     - limitPerPage
-      │     - totalTodos
-      │     - searchTerm
-      ├── Methods (from useTodos):
-      │     - addTodo(title)
-      │     - deleteTodo(id)
-      │     - toggleTodo(id)
-      │     - editTodoTitle(id, newTitle)
-      │     - goToNextPage(), goToPrevPage(), setLimit(limit)
-      │     - setSearchTerm(term)
-      └── TodoListView (Presentational)
-           └── TodoItem (presentational, repeated)
-                ├── Props:
-                │     id, title, completed, onDelete(), onToggle(), onEditTitle()
-                └── Local state:
-                      - isEditing (edit field)
-                      - editTitle (input value)
-                      - localCompleted (visual sync with prop)
+    subgraph "UI (Components)"
+        Container{{TodoList}}
+        View[TodoListView]
+        Item[TodoItem]
+    end
 
+    %% Styling
+    style API fill:#f5f5f5,stroke:#555,stroke-width:1px
+    style Hook fill:#f9f,stroke:#333,stroke-width:2px
+    style Container fill:#bbf,stroke:#333,stroke-width:2px
+    style View fill:#9f9,stroke:#333,stroke-width:2px
+    style Item fill:#9f9,stroke:#333,stroke-width:2px
+
+    %% Connections
+    API -- GET, PUT, DELETE --> Hook
+    Hook -- state & functions --> Container
+    Container -- "props (todos, isLoading, deleteTodo, etc.)" --> View
+    View -- "props (id, title, completed, onDelete, etc.)" --> Item
+    Item -.->|"callbacks (onDelete, onToggle, onEditTitle)"| View
+    View -.->|"callbacks (onSearch, onAdd, onNext, etc.)"| Container
+```
 ## Data Flow
-- Props Down: TodoList → TodoListView → TodoItem (passes data & callbacks)
-- Callbacks Up: TodoItem → TodoList (container) → useTodos (hook) → API & local state
-- useTodos performs API queries:
-  - GET /todos?limit={limit}&skip={skip}
-  - PUT /todos/{id} (toggle, edit)
-  - DELETE /todos/{id}
-- Search: client-side filter applied to current page's todos (case-insensitive)
-- Pagination: hook manages currentPage/limitPerPage/totalTodos via API `limit` & `skip`
+Передача props вниз: TodoList → TodoListView → TodoItem (передаються дані та callback-функції).
+Виклик callbacks вгору: TodoItem → TodoList (контейнер) → useTodos (хук) → API та локальний стан.
+  useTodos виконує API-запити:
+-GET /todos?limit={limit}&skip={skip}
+-PUT /todos/{id} (для перемикання статусу та редагування)
+-DELETE /todos/{id}
+
+Пошук: Фільтрація на стороні клієнта, яка застосовується до завдань на поточній сторінці (регістронезалежна).
+Пагінація: Хук керує станами currentPage, limitPerPage, totalTodos через API-параметри limit та skip.
 
 ### Patterns used
-- Custom Hook (useTodos) — encapsulation of data logic and side effects
-- Container / Presentational separation (TodoList container, TodoListView/TodoItem presentational)
-- Prop drilling (props down, callbacks up)
-- Pessimistic updates for edit/toggle/delete (state updated after API success)
-- Client-side add & search (local state)
+Кастомний хук (useTodos) — інкапсуляція логіки роботи з даними та побічних ефектів (сайд-ефектів).
+Розділення на контейнерні та презентаційні компоненти (Container / Presentational) — TodoList як контейнер, TodoListView/TodoItem як презентаційні.
+Прокидування пропсів (Prop drilling) — props передаються вниз, callbacks викликаються вгору.
+Песимістичні оновлення (Pessimistic updates) для редагування/перемикання/видалення — стан оновлюється після успішної відповіді від API.
+Додавання та пошук на стороні клієнта (через локальний стан).

@@ -1,45 +1,62 @@
-# To-Do List App — Component Tree + Data Flow
+# Final Project: Developer Portfolio & Task Manager
+
+Цей веб-додаток є фінальним проєктом, що демонструє навички роботи з React, Zustand та Material UI.
+
+## Структура проєкту
+
+Організація файлової системи базується на розділенні відповідальності:
+
+```text
+src/
+├── components/          # (Presentational) компоненти (Layout, Cards)
+├── data/                # Константні дані
+├── pages/               # Компоненти-сторінки (Home, Portfolio, Testimonials)
+├── store/               # Zustand Store (глобальний стейт-менеджмент)
+├── theme/               # Конфігурація теми (Dark/Light mode, Global Styles)
+├── AppRouter.jsx        # Маршрутизація
+└── main.jsx             # Точка входу
+```
+
+## Архітектурні рішення *
+
+Ключові технічні рішення, прийняті під час розробки для забезпечення якості коду.
+
+### 1. State Management (Zustand)
+Для управління станом завдань (Todo List) використано бібліотеку **Zustand**.
+* **Реалізація:** Стор містить методи `addTodo`, `removeTodo`, `toggleTodo`, які компоненти викликають напряму.
+
+### 2. Service Layer Pattern (Шар сервісів)
+Взаємодію з API винесено в окремий модуль, щоб ізолювати логіку запитів від компонентів.
+
+### 3. Advanced Theming & UX Fixes
+Реалізовано систему темної/світлої теми через `MUI ThemeProvider` та `GlobalStyles`. Вирішено проблему контрастності елементів форм у темній темі.
+
+### 4. Layout & Routing Strategy
+Використано компонент-обгортку `Layout` з React Router для стабільної навігації.
+
+## Component Tree *
+
+Візуалізація ієрархії компонентів:
+
 ```mermaid
 graph TD
-    subgraph "Logic (Hook)"
-        Hook(useTodos)
+    App[App Application] --> Theme[ThemeProvider / GlobalStyles]
+    Theme --> Router[AppRouter]
+    Router --> Layout[Layout Component]
+
+    subgraph Shared Layout
+        Layout --> Nav[AppBar / Navigation]
+        Layout --> Main{Outlet / Dynamic Content}
     end
 
-    subgraph "UI (Components)"
-        Container{{TodoList}}
-        View[TodoListView]
-        Item[TodoItem]
-    end
+    Main --> P1[Page: Home]
+    Main --> P2[Page: Portfolio]
+    Main --> P3[Page: Testimonials]
+    Main --> P4[Module: TodoList]
 
-    %% Styling
-    style API fill:#f5f5f5,stroke:#555,stroke-width:1px
-    style Hook fill:#f9f,stroke:#333,stroke-width:2px
-    style Container fill:#bbf,stroke:#333,stroke-width:2px
-    style View fill:#9f9,stroke:#333,stroke-width:2px
-    style Item fill:#9f9,stroke:#333,stroke-width:2px
+    P2 --> Grid[Adaptive Grid]
+    Grid --> Card[ProjectCard]
 
-    %% Connections
-    API -- GET, PUT, DELETE --> Hook
-    Hook -- state & functions --> Container
-    Container -- "props (todos, isLoading, deleteTodo, etc.)" --> View
-    View -- "props (id, title, completed, onDelete, etc.)" --> Item
-    Item -.->|"callbacks (onDelete, onToggle, onEditTitle)"| View
-    View -.->|"callbacks (onSearch, onAdd, onNext, etc.)"| Container
+    P4 --> Filter[FilterBar]
+    P4 --> List[TodoItem]
 ```
-## Data Flow
-Передача props вниз: TodoList → TodoListView → TodoItem (передаються дані та callback-функції).
-Виклик callbacks вгору: TodoItem → TodoList (контейнер) → useTodos (хук) → API та локальний стан.
-  useTodos виконує API-запити:
--GET /todos?limit={limit}&skip={skip}
--PUT /todos/{id} (для перемикання статусу та редагування)
--DELETE /todos/{id}
-
-Пошук: Фільтрація на стороні клієнта, яка застосовується до завдань на поточній сторінці (регістронезалежна).
-Пагінація: Хук керує станами currentPage, limitPerPage, totalTodos через API-параметри limit та skip.
-
-### Patterns used
-Кастомний хук (useTodos) — інкапсуляція логіки роботи з даними та побічних ефектів (сайд-ефектів).
-Розділення на контейнерні та презентаційні компоненти (Container / Presentational) — TodoList як контейнер, TodoListView/TodoItem як презентаційні.
-Прокидування пропсів (Prop drilling) — props передаються вниз, callbacks викликаються вгору.
-Песимістичні оновлення (Pessimistic updates) для редагування/перемикання/видалення — стан оновлюється після успішної відповіді від API.
-Додавання та пошук на стороні клієнта (через локальний стан).

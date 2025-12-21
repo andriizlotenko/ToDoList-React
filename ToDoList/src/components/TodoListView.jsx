@@ -1,5 +1,21 @@
 import TodoItem from "./TodoItem";
-import "./TodoList.css";
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  Typography,
+  Stack,
+  FormControl,
+  InputLabel,
+  List,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 export default function TodoListView(props) {
   const {
@@ -14,53 +30,66 @@ export default function TodoListView(props) {
   const maxPage = Math.max(1, Math.ceil(totalTodos / limitPerPage));
 
   return (
-    <div className="todo-container">
-      <div className="controls-row">
-        <input
-          type="text"
-          placeholder="Search tasks..."
+    <Box sx={{ width: '100%' }}>
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          label="Search tasks..."
+          variant="outlined"
+          size="small"
           value={searchTerm}
           onChange={(e) => onSearch(e.target.value)}
-          className="todo-input search"
+          sx={{ bgcolor: 'background.paper' }}
         />
-        <select
-          value={limitPerPage}
-          onChange={(e) => onSetLimit(Number(e.target.value))}
-          className="limit-select"
-        >
-          <option value={3}>3 / page</option>
-          <option value={5}>5 / page</option>
-          <option value={8}>8 / page</option>
-        </select>
-      </div>
+        <FormControl size="small" sx={{ minWidth: 100, bgcolor: 'background.paper' }}>
+          <InputLabel>Limit</InputLabel>
+          <Select
+            value={limitPerPage}
+            label="Limit"
+            onChange={(e) => onSetLimit(Number(e.target.value))}
+          >
+            <MenuItem value={3}>3 / page</MenuItem>
+            <MenuItem value={5}>5 / page</MenuItem>
+            <MenuItem value={8}>8 / page</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
 
-      <div className="input-wrapper">
-        <input
-          type="text"
+      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          label="New task description"
+          variant="outlined"
+          size="small"
           value={newTask}
           onChange={(e) => onNewTaskChange(e.target.value)}
-          placeholder="Add new task..."
-          className="todo-input"
           onKeyDown={(e) => { if (e.key === "Enter") onAdd(); }}
+          sx={{ bgcolor: 'background.paper' }}
         />
-        <button onClick={onAdd} className="todo-add-btn">Add</button>
-      </div>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={onAdd}
+          sx={{ textTransform: 'none', fontWeight: 'bold' }}
+        >
+          Add
+        </Button>
+      </Stack>
 
-      <div className="meta-row">
-        <div>
-          Page {currentPage} / {maxPage} · Total: {totalTodos}
-        </div>
-        <div>
-          <button onClick={onPrev} disabled={currentPage <= 1} className="page-btn">Prev</button>
-          <button onClick={onNext} disabled={currentPage >= maxPage} className="page-btn">Next</button>
-        </div>
-      </div>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1, textAlign: 'right' }}>
+        Page {currentPage} of {maxPage} (Total: {totalTodos})
+      </Typography>
 
-      {isLoading && <p className="center">Loading...</p>}
-      {error && <p className="center error">Error: {error}</p>}
+      {isLoading && <Box display="flex" justifyContent="center" p={2}><CircularProgress size={24} /></Box>}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <ul className="todo-list">
-        {todos.length === 0 && !isLoading && <li className="empty">No tasks found.</li>}
+      <List sx={{ bgcolor: 'background.paper', borderRadius: 1, mb: 2, p: 0 }}>
+        {todos.length === 0 && !isLoading && (
+          <Typography align="center" sx={{ py: 3, color: 'text.disabled' }}>
+            List is empty.
+          </Typography>
+        )}
         {todos.map((t) => (
           <TodoItem
             key={t.id}
@@ -72,7 +101,26 @@ export default function TodoListView(props) {
             onEditTitle={onEditTitle}
           />
         ))}
-      </ul>
-    </div>
+      </List>
+
+      <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          onClick={onPrev}
+          disabled={currentPage <= 1}
+        >
+          Prev
+        </Button>
+        <Button
+          variant="outlined"
+          endIcon={<ArrowForwardIcon />}
+          onClick={onNext}
+          disabled={currentPage >= maxPage}
+        >
+          Next
+        </Button>
+      </Stack>
+    </Box>
   );
 }

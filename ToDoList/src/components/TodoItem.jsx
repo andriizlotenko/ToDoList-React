@@ -1,22 +1,28 @@
-import React, { useState, useEffect, memo } from "react";
-import "./TodoItem.css";
+import { useState, useEffect, memo } from "react";
+import {
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Checkbox,
+  IconButton,
+  TextField,
+  Stack
+} from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import CheckIcon from "@mui/icons-material/Check";
 
 function TodoItem({ id, title, completed, onDelete, onToggle, onEditTitle }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
-  const [localCompleted, setLocalCompleted] = useState(Boolean(completed));
 
   useEffect(() => {
     setEditTitle(title);
   }, [title]);
 
-  useEffect(() => {
-    setLocalCompleted(Boolean(completed));
-  }, [completed]);
-
   const handleToggle = () => {
     onToggle(id);
-    setLocalCompleted((c) => !c);
   };
 
   const handleSave = async () => {
@@ -27,37 +33,67 @@ function TodoItem({ id, title, completed, onDelete, onToggle, onEditTitle }) {
   };
 
   return (
-    <li className="todo-item">
-      <div className="todo-left">
-        <input
-          type="checkbox"
-          checked={localCompleted}
-          onChange={handleToggle}
-          className="todo-checkbox"
-        />
-        {!isEditing ? (
-          <span className={`todo-title ${localCompleted ? "completed" : ""}`}>{title}</span>
-        ) : (
-          <input
-            className="edit-input"
+    <ListItem
+      disablePadding
+      sx={{
+        mb: 1,
+        border: '1px solid #eee',
+        borderRadius: 2,
+        '&:hover': { bgcolor: '#f9f9f9' }
+      }}
+      secondaryAction={
+        <Stack direction="row" spacing={0}>
+          {isEditing ? (
+            <IconButton edge="end" onClick={handleSave} color="primary">
+              <CheckIcon />
+            </IconButton>
+          ) : (
+            <IconButton edge="end" onClick={() => setIsEditing(true)} sx={{ color: 'text.secondary' }}>
+              <EditOutlinedIcon />
+            </IconButton>
+          )}
+          <IconButton edge="end" onClick={() => onDelete(id)} color="error">
+            <DeleteOutlineIcon />
+          </IconButton>
+        </Stack>
+      }
+    >
+      <ListItemButton onClick={handleToggle} dense sx={{ pr: 8 }}>
+        <ListItemIcon sx={{ minWidth: 36 }}>
+          <Checkbox
+            edge="start"
+            checked={Boolean(completed)}
+            tabIndex={-1}
+            disableRipple
+            color="secondary"
+          />
+        </ListItemIcon>
+
+        {isEditing ? (
+          <TextField
+            fullWidth
+            variant="standard"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSave();
+            onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
+            onClick={(e) => e.stopPropagation()}
+            autoFocus
+          />
+        ) : (
+          <ListItemText
+            primary={title}
+            primaryTypographyProps={{
+              variant: "body1",
+              style: {
+                textDecoration: completed ? "line-through" : "none",
+                color: completed ? "#999" : "#333",
+                transition: "color 0.2s"
+              }
             }}
           />
         )}
-      </div>
-
-      <div className="todo-actions">
-        {!isEditing ? (
-          <button className="edit-btn" onClick={() => setIsEditing(true)}>Edit</button>
-        ) : (
-          <button className="save-btn" onClick={handleSave}>Save</button>
-        )}
-        <button className="delete-btn" onClick={() => onDelete(id)}>✖</button>
-      </div>
-    </li>
+      </ListItemButton>
+    </ListItem>
   );
 }
 

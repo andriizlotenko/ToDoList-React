@@ -1,13 +1,11 @@
-import TodoList from "./components/TodoList";
+import AppRouter from './AppRouter';
+import { ThemeProvider } from './theme/ThemeProvider';
 import "./App.css";
 
 export default function App() {
   return (
-    <div className="app-wrapper">
-      <div className="app-container">
-        <h1>To-Do List</h1>
-        <TodoList />
-      </div>
-    </div>
+    <ThemeProvider>
+       <AppRouter />
+    </ThemeProvider>
   );
 }

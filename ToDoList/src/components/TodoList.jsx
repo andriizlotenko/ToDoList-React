@@ -1,17 +1,24 @@
-import React, { useState, useCallback } from "react";
-import useTodos from "../hooks/useTodos";
+import { useState, useEffect, useCallback } from "react";
+import useTodoStore from "../store/useTodoStore";
 import TodoListView from "./TodoListView";
 
 export default function TodoList() {
   const {
     todos, isLoading, error,
-    currentPage, limitPerPage, totalTodos,
-    goToNextPage, goToPrevPage, setLimit,
-    searchTerm, setSearchTerm,
-    addTodo, deleteTodo, toggleTodo, editTodoTitle,
-  } = useTodos(5);
+    currentPage, limitPerPage, totalTodos, searchTerm,
+    fetchPage, goToNextPage, goToPrevPage, setLimit, setSearchTerm,
+    addTodo, deleteTodo, toggleTodo, editTodoTitle
+  } = useTodoStore();
 
   const [newTask, setNewTask] = useState("");
+
+  useEffect(() => {
+    fetchPage();
+  }, [fetchPage]);
+
+  const filteredTodos = todos.filter((t) =>
+    t.todo.toLowerCase().includes((searchTerm || "").trim().toLowerCase())
+  );
 
   const handleAdd = useCallback(() => {
     if (!newTask.trim()) return;
@@ -20,24 +27,31 @@ export default function TodoList() {
   }, [newTask, addTodo]);
 
   return (
-    <TodoListView
-      todos={todos}
-      isLoading={isLoading}
-      error={error}
-      currentPage={currentPage}
-      limitPerPage={limitPerPage}
-      totalTodos={totalTodos}
-      onNext={goToNextPage}
-      onPrev={goToPrevPage}
-      onSetLimit={setLimit}
-      searchTerm={searchTerm}
-      onSearch={setSearchTerm}
-      newTask={newTask}
-      onNewTaskChange={setNewTask}
-      onAdd={handleAdd}
-      onDelete={deleteTodo}
-      onToggle={toggleTodo}
-      onEditTitle={editTodoTitle}
-    />
+    <div className="app-wrapper">
+      <div className="app-container">
+
+        <h1>To-Do List</h1>
+
+        <TodoListView
+          todos={filteredTodos}
+          isLoading={isLoading}
+          error={error}
+          currentPage={currentPage}
+          limitPerPage={limitPerPage}
+          totalTodos={totalTodos}
+          onNext={goToNextPage}
+          onPrev={goToPrevPage}
+          onSetLimit={setLimit}
+          searchTerm={searchTerm}
+          onSearch={setSearchTerm}
+          newTask={newTask}
+          onNewTaskChange={setNewTask}
+          onAdd={handleAdd}
+          onDelete={deleteTodo}
+          onToggle={toggleTodo}
+          onEditTitle={editTodoTitle}
+        />
+      </div>
+    </div>
   );
 }
